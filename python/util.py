@@ -45,9 +45,12 @@ def draw_bodypose(canvas, candidate, subset):
                [10, 11], [2, 12], [12, 13], [13, 14], [2, 1], [1, 15], [15, 17], \
                [1, 16], [16, 18], [3, 17], [6, 18]]
 
+    # indexと関節の関係はkeypoints_pose_18.pngを参照
     colors = [[255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 255, 0], [170, 255, 0], [85, 255, 0], [0, 255, 0], \
               [0, 255, 85], [0, 255, 170], [0, 255, 255], [0, 170, 255], [0, 85, 255], [0, 0, 255], [85, 0, 255], \
               [170, 0, 255], [255, 0, 255], [255, 0, 170], [255, 0, 85]]
+    target_points = np.zeros([4, 2])
+    target_idx = [10, 13, 8, 11]
     for i in range(18):
         for n in range(len(subset)):
             index = int(subset[n][i])
@@ -55,6 +58,8 @@ def draw_bodypose(canvas, candidate, subset):
                 continue
             x, y = candidate[index][0:2]
             cv2.circle(canvas, (int(x), int(y)), 4, colors[i], thickness=-1)
+            if i in target_idx:
+                target_points[target_idx.index(i)] = [x, y]
     for i in range(17):
         for n in range(len(subset)):
             index = subset[n][np.array(limbSeq[i]) - 1]
@@ -72,7 +77,7 @@ def draw_bodypose(canvas, candidate, subset):
             canvas = cv2.addWeighted(canvas, 0.4, cur_canvas, 0.6, 0)
     # plt.imsave("preview.jpg", canvas[:, :, [2, 1, 0]])
     # plt.imshow(canvas[:, :, [2, 1, 0]])
-    return canvas
+    return canvas, target_points
 
 def draw_handpose(canvas, all_hand_peaks, show_number=False):
     edges = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [0, 9], [9, 10], \
@@ -185,7 +190,7 @@ def handDetect(candidate, subset, oriImg):
     '''
     return value: [[x, y, w, True if left hand else False]].
     width=height since the network require squared input.
-    x, y is the coordinate of top left 
+    x, y is the coordinate of top left
     '''
     return detect_result
 

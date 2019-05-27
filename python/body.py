@@ -10,6 +10,9 @@ from model import bodypose_model
 import torch
 from torchvision import transforms
 
+
+E = 1e-6
+
 class Body(object):
     def __init__(self, model_path):
         self.model = bodypose_model()
@@ -115,7 +118,7 @@ class Body(object):
                     for j in range(nB):
                         vec = np.subtract(candB[j][:2], candA[i][:2])
                         norm = math.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
-                        vec = np.divide(vec, norm)
+                        vec = (vec + E) / (norm + E)
 
                         startend = list(zip(np.linspace(candA[i][0], candB[j][0], num=mid_num), \
                                             np.linspace(candA[i][1], candB[j][1], num=mid_num)))
@@ -127,7 +130,7 @@ class Body(object):
 
                         score_midpts = np.multiply(vec_x, vec[0]) + np.multiply(vec_y, vec[1])
                         score_with_dist_prior = sum(score_midpts) / len(score_midpts) + min(
-                            0.5 * oriImg.shape[0] / norm - 1, 0)
+                            (0.5 * oriImg.shape[0] + E) / (norm - 1 + E), 0)
                         criterion1 = len(np.nonzero(score_midpts > thre2)[0]) > 0.8 * len(score_midpts)
                         criterion2 = score_with_dist_prior > 0
                         if criterion1 and criterion2:
