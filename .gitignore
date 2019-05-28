@@ -5,3 +5,6 @@ hiddenlayer/
 .ipynb_checkpoints/
 __pycache__
 *.prototxt
+*.avi
+*.csv
+*.mp4
